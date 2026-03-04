@@ -1,0 +1,108 @@
+{
+  "product_name": "Echo Bot Backend",
+  "product_overview": "Бэкенд-сервис для Telegram эхо-бота. Хранит пользователей, предоставляет REST API.",
+  "features": [
+    {
+      "feature_id": "F001",
+      "general_info": {
+        "name": "Базовые команды",
+        "overview": "Регистрация пользователей при /start, справка, эхо-ответ"
+      },
+      "goal_and_context": {
+        "business_goal": "Сохранять данные пользователей для дальнейшей аналитики и персонализации",
+        "user_problem": "Бот должен запоминать пользователей между сессиями"
+      },
+      "actors_and_roles": {
+        "primary_user": "Пользователь Telegram",
+        "secondary_user": null,
+        "system_service": "PostgreSQL, Telegram Bot"
+      },
+      "business_rules": [
+        {
+          "rule_id": "BR001",
+          "description": "Пользователь идентифицируется по telegram_id (уникальный)"
+        },
+        {
+          "rule_id": "BR002",
+          "description": "При повторном /start дубликат не создаётся"
+        }
+      ],
+      "acceptance_criteria": [
+        {
+          "scenario_id": "SC001",
+          "user_story": "Как новый пользователь, я хочу быть зарегистрированным при первом /start",
+          "bdd": {
+            "given": "Пользователь не существует в БД",
+            "and_preconditions": [],
+            "when": "Отправляет /start",
+            "then": "Пользователь создан в БД",
+            "and_postconditions": ["Бот показывает приветствие для нового пользователя"]
+          }
+        },
+        {
+          "scenario_id": "SC002",
+          "user_story": "Как существующий пользователь, я не хочу быть зарегистрированным повторно",
+          "bdd": {
+            "given": "Пользователь уже существует в БД",
+            "and_preconditions": [],
+            "when": "Отправляет /start",
+            "then": "Возвращаются данные существующего пользователя",
+            "and_postconditions": ["Дубликат не создан", "Бот показывает приветствие для существующего пользователя"]
+          }
+        },
+        {
+          "scenario_id": "SC003",
+          "user_story": "Как пользователь, я хочу получить справку по команде /help",
+          "bdd": {
+            "given": "Пользователь в любом состоянии",
+            "and_preconditions": [],
+            "when": "Отправляет /help",
+            "then": "Бот показывает справочное сообщение",
+            "and_postconditions": []
+          }
+        },
+        {
+          "scenario_id": "SC004",
+          "user_story": "Как пользователь, я хочу получить эхо-ответ на текст",
+          "bdd": {
+            "given": "Пользователь в любом состоянии",
+            "and_preconditions": [],
+            "when": "Отправляет текстовое сообщение",
+            "then": "Бот отвечает эхо с текстом пользователя",
+            "and_postconditions": []
+          }
+        }
+      ],
+      "non_functional_requirements": [
+        {
+          "nfr_id": "NFR001",
+          "type": "Performance",
+          "description": "Ответ API < 500ms"
+        }
+      ],
+      "test_cases": [
+        {
+          "test_id": "T001",
+          "scenario_id": "SC001",
+          "setup": "Пустая БД",
+          "action": "POST /api/v1/users с telegram_id=123",
+          "assertion": "status 201, is_new=true, пользователь в БД",
+          "examples": [
+            {"input": {"telegram_id": 123, "username": "john"}, "expected": {"status": 201, "is_new": true}},
+            {"input": {"telegram_id": 456, "username": null}, "expected": {"status": 201, "is_new": true}}
+          ]
+        },
+        {
+          "test_id": "T002",
+          "scenario_id": "SC002",
+          "setup": "Пользователь telegram_id=123 уже в БД",
+          "action": "POST /api/v1/users с telegram_id=123",
+          "assertion": "status 200, is_new=false, дубликат не создан",
+          "examples": [
+            {"input": {"telegram_id": 123, "username": "john"}, "expected": {"status": 200, "is_new": false}}
+          ]
+        }
+      ]
+    }
+  ]
+}

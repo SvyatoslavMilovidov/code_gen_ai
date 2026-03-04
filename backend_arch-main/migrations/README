@@ -1,0 +1,6 @@
+Generic single-database configuration with async support.
+
+Commands:
+    alembic revision --autogenerate -m "Message"  # Create migration
+    alembic upgrade head                          # Apply all migrations
+    alembic downgrade -1                          # Rollback one migration
